@@ -5,13 +5,19 @@
 
 - Authentication of user 
 
-    - level of security: level 2
+    - level of security: level 4
   
     - bcrypt hashed passwords are implemented
   
-    - middlewares are not included
+    - middlewares are included
+ 
+    - authentication is developed based on cookies
+ 
+    - verification of accessTokens is handled
   
     - status responses of the routes are included and the json objects are returned
+ 
+    - user details are identified by accessTokens
       
 - Google Maps Api
     -   Api implemented successfully
