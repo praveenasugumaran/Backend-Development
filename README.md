@@ -22,4 +22,4 @@
 - Google Maps Api
     -   Api implemented successfully
     -   Api key is unauthorized
-    -     returned the status of api along with lat and long of the location
+    -   returned the status of api along with lat and long of the location
