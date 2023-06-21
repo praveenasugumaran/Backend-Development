@@ -7,7 +7,7 @@
 
     - level of security: level 2
   
-    - bcrypt hased passwords are implemented
+    - bcrypt hashed passwords are implemented
   
     - middlewares are not included
   
