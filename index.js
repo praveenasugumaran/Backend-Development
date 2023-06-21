@@ -2,8 +2,12 @@ const express=require('express');
 const bodyParser=require('body-parser')
 const mongoose=require('mongoose')
 const bcrypt=require('bcrypt')
+const cookieParser=require('cookie-parser')
+const { createToken } =require('./JWT');
 const app=express();
 app.use(bodyParser.urlencoded({extended:true}))
+app.use(express.json())
+app.use(cookieParser())
 mongoose.connect("mongodb://127.0.0.1:27017/broadway")
 const usersSchema={
     username:String,
@@ -24,6 +28,12 @@ app.post("/",async function(req,res){
 
         if(userExists){
             if(isPasswordMatch){
+                const accessToken=createToken(userExists);
+                res.cookie("access-token",accessToken,{
+                    maxAge:60*60*24*30*1000,
+                    httpOnly:true,
+                });
+                console.log(accessToken)
                 return res.status(200).json({message:'user successfully logged in'});
             }
             else{
