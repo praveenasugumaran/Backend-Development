@@ -86,7 +86,7 @@ app.get("/signup", (req, res) => {
 
 app.post("/signup", async (req, res) => {
     // Input validation (example)
-    if (!req.body.username || !req.body.email || !req.body.password) {
+    if (!req.body.username || !req.body.emailid || !req.body.password) {
         return res.status(400).json({ message: 'Username, email, and password are required' });
     }
 
@@ -98,7 +98,7 @@ app.post("/signup", async (req, res) => {
             const hashedPassword = await bcrypt.hash(req.body.password, 10);
             const newUser = new User({
                 username: req.body.username,
-                email: req.body.email,
+                email: req.body.emailid,
                 password: hashedPassword
             });
             await newUser.save();
