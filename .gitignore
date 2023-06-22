@@ -1,2 +1,63 @@
+# .gitignore
+
+# Ignore environment variables file
 **/.env
+
+# Ignore Python compiled files
+__pycache__/
+*.py[cod]
+
+# Ignore Django migrations (optional, only if you choose to not include migrations)
+# django_server/myapp/migrations/*
+
+# Ignore Django static files collected for deployment (not the ones in your app)
+django_server/static/
+
+# Ignore Django media files (user uploads, etc.)
+django_server/media/
+
+# Ignore Python virtual environments
+venv/
+*.venv/
+env/
+
+# Ignore Node.js dependencies
+express_server/node_modules/
+
+# Ignore npm debug logs
+npm-debug.log
+express_server/npm-debug.log
+
+# Ignore log files
+*.log
+
+# Ignore IDE/project files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore database files (SQLite)
+*.sqlite3
+db.sqlite3
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore Node.js modules
 node_modules/
+
+# Ignore logs
+logs
+npm-debug.log*
+
+# Ignore build and runtime files for Node.js
+build/
+dist/
+*.pid
+*.seed
+*.out
+
+# Ignore user uploads (you might have a directory for user uploaded files)
+media/
