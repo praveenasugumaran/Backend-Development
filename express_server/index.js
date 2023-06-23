@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
-const { createToken } = require('./JWT');
+const { createToken, validateToken } = require('./JWT');
 const rateLimit = require("express-rate-limit");
 const helmet = require('helmet');
 const cors = require('cors');
@@ -26,8 +26,8 @@ app.use(rateLimit({
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('Connected to MongoDB')) // Log successful connection
-    .catch(err => console.error('Could not connect to MongoDB...', err)); // Log connection error
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('Could not connect to MongoDB...', err));
 
 // Define User Schema
 const userSchema = new mongoose.Schema({
@@ -43,21 +43,30 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+// Define Subscription Schema
+const subscriptionSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+});
+
 // Create User Model from the Schema
 const User = mongoose.model("User", userSchema);
 
+// Create Subscription Model from the SubSchema
+const Subscription = mongoose.model("Subscription", subscriptionSchema);
+
 // Routes
 app.get("/", (req, res) => {
-    // Serve the login HTML page
     res.sendFile(__dirname + "/login.html");
 });
 
-app.post("/", async (req, res) => {
-    // Validate input (make sure email and password are provided)
+// Login route
+app.post("/login", async (req, res) => {
     if (!req.body.email || !req.body.password) {
         return res.status(400).json({ message: 'Email and password are required' });
     }
-
     // Try to authenticate the user
     try {
         const userExists = await User.findOne({ email: req.body.email });
@@ -80,61 +89,78 @@ app.post("/", async (req, res) => {
             return res.status(400).json({ message: 'User does not exist' });
         }
     } catch (error) {
-        // Log error and respond with generic error message
         console.error(error);
         return res.status(500).json({ message: 'An error occurred' });
     }
 });
 
 app.get("/signup", (req, res) => {
-    // Serve the signup HTML page
     res.sendFile(__dirname + "/signup.html");
 });
 
-app.post("/signup", async (req, res) => {
-    // Validate input (make suresure username, email, and password are provided)
+// Signup route
+app.post("/sign-up", async (req, res) => {
     if (!req.body.username || !req.body.email || !req.body.password) {
         return res.status(400).json({ message: 'Username, email, and password are required' });
     }
-
     // Try to create a new user
     try {
         const existingUser = await User.findOne({ email: req.body.email });
         if (existingUser) {
-            // If user already exists, send an error response
             return res.status(400).json({ message: 'User already exists' });
         } else {
-            // Hash the user's password
             const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-            // Create a new user
             const newUser = new User({
                 username: req.body.username,
                 email: req.body.email,
                 password: hashedPassword
             });
-
-            // Save the new user to the database
             await newUser.save();
             return res.status(200).json({ message: 'User saved successfully' });
         }
     } catch (error) {
-        // Log error and respond with generic error message
         console.error(error);
         return res.status(500).json({ message: 'An error occurred' });
     }
 });
 
-// Error handling middleware
+// Subscribe route
+app.post("/subscribe", validateToken, async (req, res) => {
+    if (!req.body.email) {
+        return res.status(400).json({ message: 'Email is required' });
+    }
+    try {
+        
+        const userExists = await User.findOne({ email: req.body.email });
+        if (userExists) {
+            // If a subscription already exists.
+            const existingSubscription = await Subscription.findOne({ user: userExists._id });
+
+            if (existingSubscription) {
+                return res.status(400).json({ message: 'Already subscribed' });
+            } else {
+                // If no subscription exists, it creates a new subscription for the user and saves it to the database.
+                const newSubscription = new Subscription({
+                    user: userExists._id
+                });
+                await newSubscription.save();
+                return res.status(200).json({ message: 'User successfully subscribed' });
+            }
+        } else {
+            return res.status(400).json({ message: 'User does not exist' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'An error occurred' });
+    }
+});
+
 app.use((err, req, res, next) => {
-    // Log the error stack and respond with 500 status code
     console.error(err.stack);
     res.status(500).send('Something broke!');
 });
 
-// Start server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    // Log that the server is listening on the specified port
     console.log(`Successfully listening on port ${port}...`);
 });
