@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
-const { createToken } = require('./JWT');
+const { createToken, validateToken } = require('./JWT');
 const rateLimit = require("express-rate-limit");
 const helmet = require('helmet');
 const cors = require('cors');
@@ -29,7 +29,6 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
     .then(() => console.log('Connected to MongoDB')) // Log successful connection
     .catch(err => console.error('Could not connect to MongoDB...', err)); // Log connection error
 
-// Define User Schema
 const userSchema = new mongoose.Schema({
     username: String,
     email: {
@@ -43,8 +42,19 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+// Define Subscription Schema
+const subscriptionSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+});
+
 // Create User Model from the Schema
 const User = mongoose.model("User", userSchema);
+
+// Create Subscription Model from the SubSchema
+const Subscription = mongoose.model("Subscription", subscriptionSchema);
 
 // Routes
 app.get("/", (req, res) => {
@@ -121,6 +131,32 @@ app.post("/sign-up", async (req, res) => {
             await newUser.save();
             return res.status(200).json({ message: 'User saved successfully' });
         }
+    } catch (error) {
+        // Log error and respond with generic error message
+        console.error(error);
+        return res.status(500).json({ message: 'An error occurred' });
+    }
+});
+
+// Subscription for newsletter route and validating using JWT token
+app.post("/subscribe",validateToken, async (req, res) => {
+    // Validate input (make sure email is provided)
+    if (!req.body.email) {
+        return res.status(400).json({ message: 'Email is required' });
+    }
+    // Try to authenticate the user
+    try {
+        const userExists = await User.findOne({ email: req.body.email });
+        if (userExists) {
+            const newSubscription = new Subscription({
+                user: userExists._id
+            });
+            await newSubscription.save();
+            return res.status(200).json({ message: 'User successfully subscribed' });
+        } else {          
+            return res.status(400).json({ message: 'User does not exist' });
+        }
+
     } catch (error) {
         // Log error and respond with generic error message
         console.error(error);
