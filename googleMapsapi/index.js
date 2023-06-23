@@ -10,7 +10,7 @@ app.get("/",function(req,res){
 });
 app.post("/",function(req,res){
     const location=req.body.location;
-    const apikey=process.env.API_KEY
+    const apikey=process.env.GMAPS_API
     const url="https://maps.googleapis.com/maps/api/geocode/json?address="+location+"&key="+apikey;
     https.get(url,function(response){
         response.on("data",function(data){

@@ -23,7 +23,7 @@ app.use(rateLimit({ // Rate limiting
 }));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGODB_URI+"/broadway", { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Could not connect to MongoDB...', err));
 
@@ -50,31 +50,37 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", async (req, res) => {
-    // Input validation (example)
-    if (!req.body.email || !req.body.password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
 
+    // Input validation (example)
     try {
+
+        if (!req.body.email || !req.body.password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
         const userExists = await User.findOne({ email: req.body.email });
         if (userExists) {
-            const isPasswordMatch = await bcrypt.compare(req.body.password, userExists.password);
+            const isPasswordMatch = await bcrypt.compare(req.body.password, userExists.password)
+            console.log(isPasswordMatch)
             if (isPasswordMatch) {
-                const accessToken = createToken(userExists, process.env.SECRET_KEY);
+                const accessToken = createToken(userExists);
                 res.cookie("access-token", accessToken, {
                     maxAge: 60 * 60 * 24 * 30 * 1000,
                     httpOnly: true,
-                    secure: true,
-                    sameSite: 'strict'
+                    secure:true,
+                    // SameSite:Strict
                 });
                 return res.status(200).json({ message: 'User successfully logged in' });
-            } else {
+            }
+            else {
                 return res.status(400).json({ message: 'Invalid password' });
             }
-        } else {
+        }
+        else {
             return res.status(400).json({ message: 'User does not exist' });
         }
-    } catch (error) {
+    }
+
+    catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'An error occurred' });
     }
@@ -86,22 +92,23 @@ app.get("/signup", (req, res) => {
 
 app.post("/signup", async (req, res) => {
     // Input validation (example)
-    if (!req.body.username || !req.body.email || !req.body.password) {
-        return res.status(400).json({ message: 'Username, email, and password are required' });
-    }
+    // 
 
     try {
-        const existingUser = await User.findOne({ email: req.body.email });
+        if (!req.body.username || !req.body.emailid || !req.body.password) {
+            return res.status(400).json({ message: 'Username, email, and password are required' });
+        }
+        const existingUser = await User.findOne({ email: req.body.emailid });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         } else {
-            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+            const hashedPassword = await bcrypt.hash(req.body.password,10);
             const newUser = new User({
                 username: req.body.username,
-                email: req.body.email,
+                email: req.body.emailid,
                 password: hashedPassword
             });
-            await newUser.save();
+            newUser.save();
             return res.status(200).json({ message: 'User saved successfully' });
         }
     } catch (error) {
