@@ -1,7 +1,18 @@
 # Broadway_Communications
 ## An Internet Service Provider Application
+
 ### Backend Development
 ---
+#### Setup for different server applications
+
+To use Django server application
+```bash
+cd django_server
+```
+To use express server application
+```bash
+cd express_server
+```
 
 - Authentication of user 
 
