@@ -52,12 +52,12 @@ app.get("/", (req, res) => {
     res.sendFile(__dirname + "/login.html");
 });
 
-app.post("/", async (req, res) => {
+// Instead of using "/" for login, using "/login" for login in the post route
+app.post("/login", async (req, res) => {
     // Validate input (make sure email and password are provided)
-    if (!req.body.email || !req.body.password) {
+    if (!req.body.email ||!req.body.password) {
         return res.status(400).json({ message: 'Email and password are required' });
     }
-
     // Try to authenticate the user
     try {
         const userExists = await User.findOne({ email: req.body.email });
@@ -70,15 +70,17 @@ app.post("/", async (req, res) => {
                     maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
                     httpOnly: true,
                     secure: true,
-                    sameSite: 'strict'
+                    sameSite:'strict'
                 });
                 return res.status(200).json({ message: 'User successfully logged in' });
             } else {
                 return res.status(400).json({ message: 'Invalid password' });
             }
+            
         } else {
             return res.status(400).json({ message: 'User does not exist' });
         }
+        
     } catch (error) {
         // Log error and respond with generic error message
         console.error(error);
@@ -91,7 +93,8 @@ app.get("/signup", (req, res) => {
     res.sendFile(__dirname + "/signup.html");
 });
 
-app.post("/signup", async (req, res) => {
+// Instead of using "/signup" for signup, changed "/sign-up" for signup in the post route
+app.post("/sign-up", async (req, res) => {
     // Validate input (make suresure username, email, and password are provided)
     if (!req.body.username || !req.body.emailid || !req.body.password) {
         return res.status(400).json({ message: 'Username, email, and password are required' });
