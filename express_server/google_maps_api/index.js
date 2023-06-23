@@ -66,3 +66,25 @@ const PORT = process.env.PORT || 1234;
 app.listen(PORT, () => {
     console.log(`Successfully connected to the port ${PORT}...`);
 });
+app.post("/",function(req,res){
+    const location=req.body.location;
+    const apikey=process.env.GMAPS_API
+    const url="https://maps.googleapis.com/maps/api/geocode/json?address="+location+"&key="+apikey;
+    https.get(url,function(response){
+        response.on("data",function(data){
+            try{
+                const locData=JSON.parse(data);
+                return res.status(200).json({locData})
+            }
+            catch(error){
+                return res.status(400).json({message:'An error event occurred'});
+            }
+            
+            
+        })
+    })
+
+})
+app.listen(1234,function(req,res){
+    console.log("successfully connected to the port 1234....")
+}); 

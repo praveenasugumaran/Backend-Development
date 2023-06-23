@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
-const { createToken, validateToken } = require('./JWT');
+const { createToken } = require('./JWT');
 const rateLimit = require("express-rate-limit");
 const helmet = require('helmet');
 const cors = require('cors');
@@ -29,6 +29,7 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
     .then(() => console.log('Connected to MongoDB')) // Log successful connection
     .catch(err => console.error('Could not connect to MongoDB...', err)); // Log connection error
 
+// Define User Schema
 const userSchema = new mongoose.Schema({
     username: String,
     email: {
@@ -42,19 +43,8 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-// Define Subscription Schema
-const subscriptionSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    },
-});
-
 // Create User Model from the Schema
 const User = mongoose.model("User", userSchema);
-
-// Create Subscription Model from the SubSchema
-const Subscription = mongoose.model("Subscription", subscriptionSchema);
 
 // Routes
 app.get("/", (req, res) => {
@@ -62,12 +52,12 @@ app.get("/", (req, res) => {
     res.sendFile(__dirname + "/login.html");
 });
 
-// Instead of using "/" for login, using "/login" for login in the post route
-app.post("/login", async (req, res) => {
+app.post("/", async (req, res) => {
     // Validate input (make sure email and password are provided)
-    if (!req.body.email ||!req.body.password) {
+    if (!req.body.email || !req.body.password) {
         return res.status(400).json({ message: 'Email and password are required' });
     }
+
     // Try to authenticate the user
     try {
         const userExists = await User.findOne({ email: req.body.email });
@@ -80,17 +70,15 @@ app.post("/login", async (req, res) => {
                     maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
                     httpOnly: true,
                     secure: true,
-                    sameSite:'strict'
+                    sameSite: 'strict'
                 });
                 return res.status(200).json({ message: 'User successfully logged in' });
             } else {
                 return res.status(400).json({ message: 'Invalid password' });
             }
-            
         } else {
             return res.status(400).json({ message: 'User does not exist' });
         }
-        
     } catch (error) {
         // Log error and respond with generic error message
         console.error(error);
@@ -103,10 +91,9 @@ app.get("/signup", (req, res) => {
     res.sendFile(__dirname + "/signup.html");
 });
 
-// Instead of using "/signup" for signup, changed "/sign-up" for signup in the post route
-app.post("/sign-up", async (req, res) => {
+app.post("/signup", async (req, res) => {
     // Validate input (make suresure username, email, and password are provided)
-    if (!req.body.username || !req.body.emailid || !req.body.password) {
+    if (!req.body.username || !req.body.email || !req.body.password) {
         return res.status(400).json({ message: 'Username, email, and password are required' });
     }
 
@@ -123,7 +110,7 @@ app.post("/sign-up", async (req, res) => {
             // Create a new user
             const newUser = new User({
                 username: req.body.username,
-                email: req.body.emailid,
+                email: req.body.email,
                 password: hashedPassword
             });
 
@@ -131,32 +118,6 @@ app.post("/sign-up", async (req, res) => {
             await newUser.save();
             return res.status(200).json({ message: 'User saved successfully' });
         }
-    } catch (error) {
-        // Log error and respond with generic error message
-        console.error(error);
-        return res.status(500).json({ message: 'An error occurred' });
-    }
-});
-
-// Subscription for newsletter route and validating using JWT token
-app.post("/subscribe",validateToken, async (req, res) => {
-    // Validate input (make sure email is provided)
-    if (!req.body.email) {
-        return res.status(400).json({ message: 'Email is required' });
-    }
-    // Try to authenticate the user
-    try {
-        const userExists = await User.findOne({ email: req.body.email });
-        if (userExists) {
-            const newSubscription = new Subscription({
-                user: userExists._id
-            });
-            await newSubscription.save();
-            return res.status(200).json({ message: 'User successfully subscribed' });
-        } else {          
-            return res.status(400).json({ message: 'User does not exist' });
-        }
-
     } catch (error) {
         // Log error and respond with generic error message
         console.error(error);
