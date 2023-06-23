@@ -74,7 +74,7 @@ app.post("/", async (req, res) => {
                 res.cookie("access-token", accessToken, {
                     maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
                     httpOnly: true,
-                    secure:true,
+                    secure: true,
                     // SameSite:Strict
                 });
                 return res.status(200).json({ message: 'User successfully logged in' });
@@ -86,13 +86,10 @@ app.post("/", async (req, res) => {
         else {
             return res.status(400).json({ message: 'User does not exist' });
         }
-    }
-
-    catch (error) {
-    } catch (error) {
-        // Log error and respond with generic error message
-        console.error(error);
-        return res.status(500).json({ message: 'An error occurred' });
+    }catch (error) {
+    // Log error and respond with generic error message
+    console.error(error);
+    return res.status(500).json({ message: 'An error occurred' });
     }
 });
 

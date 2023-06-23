@@ -18,7 +18,7 @@ const createToken = (user) => {
 const validateToken = (req, res, next) => {
     const accessToken = req.cookies['access-token'];
     const refreshToken=req.cookies['refresh-token'];
-
+    //checking if there is no refresh token and access Token
     if (!accessToken && !refreshToken) {
         return res.status(401).json({ error: 'User not authenticated' });
     }
