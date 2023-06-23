@@ -5,13 +5,13 @@
 
 - Authentication of user 
 
-    - level of security: level 5
+    - level of security: level 6
   
     - bcrypt hashed passwords are implemented
   
     - middlewares are included
  
-    - authentication is developed based on cookies
+    - authentication is developed based on Tokens
  
     - verification of accessTokens is handled
   
@@ -23,7 +23,9 @@
  
     - helment middleware implemented
  
-    - express-rate-limit api calls restrictions implemented 
+    - express-rate-limit api calls restrictions implemented
+ 
+    - refresh tokens incorporated
       
 - Google Maps Api
     -   Api implemented successfully
