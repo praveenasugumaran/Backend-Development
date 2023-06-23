@@ -60,25 +60,35 @@ app.post("/", async (req, res) => {
 
     // Try to authenticate the user
     try {
+
+        if (!req.body.email || !req.body.password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
         const userExists = await User.findOne({ email: req.body.email });
         if (userExists) {
-            const isPasswordMatch = await bcrypt.compare(req.body.password, userExists.password);
+            const isPasswordMatch = await bcrypt.compare(req.body.password, userExists.password)
+            console.log(isPasswordMatch)
             if (isPasswordMatch) {
                 const accessToken = createToken(userExists, process.env.SECRET_KEY);
                 // Set the access token as a cookie
                 res.cookie("access-token", accessToken, {
                     maxAge: 60 * 60 * 24 * 30 * 1000, // 30 days
                     httpOnly: true,
-                    secure: true,
-                    sameSite: 'strict'
+                    secure:true,
+                    // SameSite:Strict
                 });
                 return res.status(200).json({ message: 'User successfully logged in' });
-            } else {
+            }
+            else {
                 return res.status(400).json({ message: 'Invalid password' });
             }
-        } else {
+        }
+        else {
             return res.status(400).json({ message: 'User does not exist' });
         }
+    }
+
+    catch (error) {
     } catch (error) {
         // Log error and respond with generic error message
         console.error(error);
@@ -99,7 +109,10 @@ app.post("/signup", async (req, res) => {
 
     // Try to create a new user
     try {
-        const existingUser = await User.findOne({ email: req.body.email });
+        if (!req.body.username || !req.body.emailid || !req.body.password) {
+            return res.status(400).json({ message: 'Username, email, and password are required' });
+        }
+        const existingUser = await User.findOne({ email: req.body.emailid });
         if (existingUser) {
             // If user already exists, send an error response
             return res.status(400).json({ message: 'User already exists' });
@@ -110,7 +123,7 @@ app.post("/signup", async (req, res) => {
             // Create a new user
             const newUser = new User({
                 username: req.body.username,
-                email: req.body.email,
+                email: req.body.emailid,
                 password: hashedPassword
             });
 
