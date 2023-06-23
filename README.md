@@ -5,7 +5,7 @@
 
 - Authentication of user 
 
-    - level of security: level 4
+    - level of security: level 5
   
     - bcrypt hashed passwords are implemented
   
@@ -18,8 +18,15 @@
     - status responses of the routes are included and the json objects are returned
  
     - user details are identified by accessTokens
+
+    - cors ( cross origin resources sharing) implemented
+ 
+    - helment middleware implemented
+ 
+    - express-rate-limit api calls restrictions implemented 
       
 - Google Maps Api
     -   Api implemented successfully
     -   Api key is unauthorized
+    -   expection handled explicitly
     -   returned the status of api along with lat and long of the location
