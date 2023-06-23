@@ -1,9 +1,5 @@
-# Broadway_Communications
-## An Internet Service Provider Application
-
-### Backend Development
----
-#### Setup for different server applications
+# Backend Development
+## Setup for different server applications
 
 To use Django server application
 ```bash
@@ -14,6 +10,7 @@ To use express server application
 cd express_server
 ```
 
+## 
 - Authentication of user 
 
     - level of security: level 6
