@@ -34,8 +34,7 @@ cd express_server
     - express-rate-limit api calls restrictions implemented
  
     - refresh tokens incorporated
- 
-    - not gonna do anything anymore
+      
 - Google Maps Api
     -   Api implemented successfully
     -   Api key is unauthorized
