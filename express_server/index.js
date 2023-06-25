@@ -116,7 +116,7 @@ app.post("/subscribe", validateToken, async (req, res) => {
         return res.status(400).json({ message: 'Email is required' });
     }
     try {
-        
+
         const userExists = await User.findOne({ email: req.body.email });
         if (userExists) {
             // If a subscription already exists.
@@ -158,6 +158,29 @@ app.post("/reset-password", validateToken, async (req, res) => {
     }
 });
 
+// Email reset route
+app.post("/reset-email", validateToken, async (req, res) => {
+    if (!req.body.newEmail) {
+        return res.status(400).json({ message: 'New Email is required' });
+    }
+
+    const newEmail = req.body.newEmail;
+    const existingUser = await User.findOne({ email: newEmail });
+
+    if (existingUser) {
+        return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    try {
+        const user = req.user;
+        user.email = newEmail;
+        await user.save();
+        return res.status(200).json({ message: 'Email reset successfully done' });
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json({ message: 'An error occurred' });
+    }
+});
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something broke!');
