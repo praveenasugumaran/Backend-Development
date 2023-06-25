@@ -29,19 +29,8 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Could not connect to MongoDB...', err));
 
-// Define User Schema
-const userSchema = new mongoose.Schema({
-    username: String,
-    email: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: {
-        type: String,
-        required: true
-    }
-});
+// Require the User model
+const User = require('./user');
 
 // Define Subscription Schema
 const subscriptionSchema = new mongoose.Schema({
@@ -50,9 +39,6 @@ const subscriptionSchema = new mongoose.Schema({
         ref: 'User'
     },
 });
-
-// Create User Model from the Schema
-const User = mongoose.model("User", userSchema);
 
 // Create Subscription Model from the SubSchema
 const Subscription = mongoose.model("Subscription", subscriptionSchema);
@@ -155,6 +141,23 @@ app.post("/subscribe", validateToken, async (req, res) => {
     }
 });
 
+// Password reset route
+app.post("/reset-password", validateToken, async (req, res) => {
+    if (!req.body.newPassword) {
+        return res.status(400).json({ message: 'New password is required' });
+    }
+    try {
+        const user = req.user;
+        const hashedPassword = await bcrypt.hash(req.body.newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+        return res.status(200).json({ message: 'Password successfully reset' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'An error occurred' });
+    }
+});
+
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something broke!');
@@ -164,3 +167,5 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Successfully listening on port ${port}...`);
 });
+
+module.exports = User;

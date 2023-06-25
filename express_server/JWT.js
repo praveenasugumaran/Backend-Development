@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { sign, verify } = require('jsonwebtoken');
+const User = require('./user');
 
 // Create a JWT token
 const createToken = (user) => {
@@ -13,7 +14,9 @@ const createToken = (user) => {
 };
 
 // Validate the JWT token
-const validateToken = (req, res, next) => {
+const jwt = require('jsonwebtoken'); // import the jwt library
+
+const validateToken = async (req, res, next) => {
     const accessToken = req.cookies['access-token'];
     if (!accessToken) {
         return res.status(401).json({ error: 'User not authenticated' });
@@ -21,8 +24,17 @@ const validateToken = (req, res, next) => {
 
     // Verify the token
     try {
-        verify(accessToken, process.env.JWT_SECRET);
-        req.authenticated = true;
+        const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+
+        // Find the user based on the ID in the decoded token
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            return res.status(401).json({ error: 'User not authenticated' });
+        }
+
+        // Add the user to the request object
+        req.user = user;
+
         next();
     } catch (err) {
         if (err instanceof jwt.TokenExpiredError) {
@@ -32,6 +44,7 @@ const validateToken = (req, res, next) => {
         }
     }
 };
+
 
 // Export the module
 module.exports = { createToken, validateToken };
