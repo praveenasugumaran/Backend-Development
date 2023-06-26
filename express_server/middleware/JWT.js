@@ -1,6 +1,6 @@
 require('dotenv').config();
-const { sign, verify } = require('jsonwebtoken');
-const User = require('./user');
+const { sign, verify, TokenExpiredError } = require('jsonwebtoken');
+const User = require('../models/user');
 
 // Create a JWT token
 const createToken = (user) => {
@@ -13,31 +13,24 @@ const createToken = (user) => {
     return sign(payload, secret, options);
 };
 
-// Validate the JWT token
-const jwt = require('jsonwebtoken'); // import the jwt library
-
 const validateToken = async (req, res, next) => {
     const accessToken = req.cookies['access-token'];
     if (!accessToken) {
         return res.status(401).json({ error: 'User not authenticated' });
     }
-
     // Verify the token
     try {
-        const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
-
+        const decoded = verify(accessToken, process.env.JWT_SECRET);
         // Find the user based on the ID in the decoded token
         const user = await User.findById(decoded.id);
         if (!user) {
             return res.status(401).json({ error: 'User not authenticated' });
         }
-
         // Add the user to the request object
         req.user = user;
-
         next();
     } catch (err) {
-        if (err instanceof jwt.TokenExpiredError) {
+        if (err instanceof TokenExpiredError) {
             res.status(401).json({ error: 'Access token expired' });
         } else {
             res.status(401).json({ error: 'User not authenticated' });
@@ -45,6 +38,4 @@ const validateToken = async (req, res, next) => {
     }
 };
 
-
-// Export the module
 module.exports = { createToken, validateToken };
