@@ -1,12 +1,12 @@
 {
-  "name": "broadwaycomm",
+  "name": "Broadway-Communications-Backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "jest"
   },
-  "author": "NitheeshwarBR",
+  "author": "Broadway-Communications",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
