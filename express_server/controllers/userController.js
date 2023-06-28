@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const Subscription = require('../models/subscription');
+const Complaint = require('../models/complaint');
 const bcrypt = require('bcrypt');
 
 // This function handles a request to subscribe a user
@@ -66,3 +67,34 @@ exports.resetEmail = async (req, res) => {
         return res.status(400).json({ message: 'An error occurred' });
     }
 };
+
+// This function handles a request to register a complaint by a user
+exports.registerComplaint = async (req, res) => {
+    if (!req.body.title || !req.body.description) {
+        return res.status(400).json({ message: 'Title and description are required' });
+    }
+    try {
+        const title = req.body.title;
+        const description = req.body.description;
+        const user = req.user;
+        const complaint = {
+            title:title,
+            description:description, 
+            closedStatus: false
+        };
+        // Find if the user has already registered a complaint
+        let userComplaint = await Complaint.findOne({ user: user._id });
+        
+        // If the user has not registered a complaint, create a new complaint   
+        if (!userComplaint) {
+            userComplaint = new Complaint({ user: user._id });
+        }
+        // Push the complaint to the user's complaints array
+        userComplaint.complaints.push(complaint);
+        await userComplaint.save();
+        return res.status(200).json({ message: 'Complaint registered Succesfully' });
+    }
+    catch (error) {
+        return res.status(400).json({ message: 'An error occurred' });
+    }
+}
