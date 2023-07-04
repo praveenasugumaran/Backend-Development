@@ -108,8 +108,9 @@ exports.plansHistory = async (req, res) => {
     }
     try {
         const amount=req.body.amount;
-        const name=Plans.name;
-        const ExpireDate=new Date()+Plans.ExpireDate;
+        const subscribedPlan=Plan.findOne({amount})
+        const name=subscribedPlan.name;
+        const ExpireDate=new Date()+subscribedPlan.ExpireDate;
         const user=req.user
         const plan={
             amount:amount,
