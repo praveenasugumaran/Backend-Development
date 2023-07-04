@@ -1,6 +1,8 @@
 const User = require('../models/user');
 const Subscription = require('../models/subscription');
 const Complaint = require('../models/complaint');
+const Plans = require('../models/plans');
+
 const bcrypt = require('bcrypt');
 
 // This function handles a request to subscribe a user
@@ -78,13 +80,13 @@ exports.registerComplaint = async (req, res) => {
         const description = req.body.description;
         const user = req.user;
         const complaint = {
-            title:title,
-            description:description, 
+            title: title,
+            description: description,
             closedStatus: false
         };
         // Find if the user has already registered a complaint
         let userComplaint = await Complaint.findOne({ user: user._id });
-        
+
         // If the user has not registered a complaint, create a new complaint   
         if (!userComplaint) {
             userComplaint = new Complaint({ user: user._id });
@@ -96,5 +98,33 @@ exports.registerComplaint = async (req, res) => {
     }
     catch (error) {
         return res.status(400).json({ message: 'An error occurred' });
+    }
+};
+
+
+exports.plansHistory = async (req, res) => {
+    if (!req.body.amount) {
+        return res.status(400).json({ message: 'subscribed amount is required' });
+    }
+    try {
+        const amount=req.body.amount;
+        const name=Plans.name;
+        const ExpireDate=new Date()+Plans.ExpireDate;
+        const user=req.user
+        const plan={
+            amount:amount,
+            name:name,
+            ExpireDate:ExpireDate
+        }
+        let userSubscription=await Subscription.findOne({user: user._id});
+        if(!userSubscription){
+            userSubscription =new Subscription({user:user._id})
+        }
+        userSubscription.Subscriptions.push(plan);
+        await userSubscription.save();
+        return res.status(200).json({message:'Plan Subscribed Successfully'})
+    }
+    catch(error){
+        return res.status(400).json({message:'An error occurred'});
     }
 }

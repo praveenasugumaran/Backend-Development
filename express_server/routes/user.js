@@ -19,4 +19,6 @@ router.post("/reset-email", limiter, validateToken, userController.resetEmail);
 // Complaint registration route
 router.post("/register-complaint", validateToken, userController.registerComplaint)
 
+//Subscription history route
+router.post("/plans-history",validateToken,userController.plansHistory);
 module.exports = router;

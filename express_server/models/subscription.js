@@ -6,6 +6,17 @@ const subscriptionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    plans: [{
+        amount: {
+            type: Number,
+            required: true
+        },
+        name: {
+            type: String,
+            required: true
+        },
+        ExpireDate: Date
+    }]
 });
 
 // Create Subscription Model from the SubSchema
